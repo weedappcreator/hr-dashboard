@@ -250,9 +250,84 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
     /* Export Button */
     .export-btn{background:rgba(77,184,168,0.15);border-color:rgba(77,184,168,0.35);color:var(--green)}
     .export-btn:hover{background:rgba(77,184,168,0.25)}
+    /* ===== SCROLL ANIMATIONS ===== */
+    .scroll-animate{opacity:0;transform:translateY(40px);transition:opacity 0.6s var(--ease-out),transform 0.6s var(--ease-out)}
+    .scroll-animate.visible{opacity:1;transform:translateY(0)}
+    .scroll-animate.delay-1{transition-delay:0.1s}
+    .scroll-animate.delay-2{transition-delay:0.2s}
+    .scroll-animate.delay-3{transition-delay:0.3s}
+    .scroll-animate.delay-4{transition-delay:0.4s}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeInScale{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+    @keyframes slideInLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes slideInRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+    /* ===== ANIMATED COUNTERS ===== */
+    .counter{display:inline-block}
+    .counter-animate{animation:countUp 1.5s var(--ease-out) forwards}
+    @keyframes countUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .stat-card{position:relative;overflow:hidden}
+    .stat-card::after{content:"";position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--green),var(--blue));transform:scaleX(0);transform-origin:left;transition:transform 0.8s var(--ease-out)}
+    .stat-card.visible::after{transform:scaleX(1)}
+    /* ===== MICRO-INTERACTIONS ===== */
+    .btn{position:relative;overflow:hidden}
+    .btn::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,255,255,0.3) 0%,transparent 70%);transform:scale(0);opacity:0;transition:transform 0.4s,opacity 0.4s}
+    .btn:active::after{transform:scale(2);opacity:1}
+    .task-card{transition:transform 0.3s var(--ease),box-shadow 0.3s var(--ease),border-color 0.3s}
+    .task-card:active{transform:scale(0.98)}
+    input:focus,select:focus,textarea:focus{position:relative}
+    input:focus::after,select:focus::after,textarea:focus::after{content:"";position:absolute;inset:-2px;border:2px solid var(--gold);border-radius:inherit;animation:borderGlow 1s var(--ease) infinite}
+    @keyframes borderGlow{0%,100%{opacity:0.5}50%{opacity:1}}
+    .nav-links a{position:relative}
+    .nav-links a::after{content:"";position:absolute;bottom:4px;left:50%;width:0;height:2px;background:var(--gold-2);transition:width 0.3s var(--ease),left 0.3s var(--ease)}
+    .nav-links a:hover::after{width:60%;left:20%}
+    /* ===== LOADING STATES ===== */
+    .skeleton{background:linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%);background-size:200% 100%;animation:skeleton 1.5s ease-in-out infinite;border-radius:12px}
+    @keyframes skeleton{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .skeleton-text{height:16px;margin-bottom:8px;border-radius:4px}
+    .skeleton-title{height:24px;width:60%;margin-bottom:12px;border-radius:6px}
+    .skeleton-card{height:120px;border-radius:20px}
+    .loading-spinner{width:24px;height:24px;border:3px solid rgba(201,169,97,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-overlay{position:fixed;inset:0;background:rgba(6,8,13,0.9);display:flex;align-items:center;justify-content:center;z-index:9999;opacity:0;pointer-events:none;transition:opacity 0.3s}
+    .loading-overlay.active{opacity:1;pointer-events:auto}
+    .loading-content{text-align:center}
+    .loading-spinner-large{width:48px;height:48px;border:4px solid rgba(201,169,97,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+    .loading-text{color:var(--soft);font-size:14px}
+    /* ===== PROGRESS BARS ===== */
+    .progress-bar{height:8px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;position:relative}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-2));border-radius:999px;transition:width 1s var(--ease-out);position:relative}
+    .progress-fill::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);animation:progressShine 1.5s ease-in-out infinite}
+    @keyframes progressShine{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+    .progress-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:12px;color:var(--soft)}
+    .progress-value{color:var(--gold-2);font-weight:700}
+    .completion-progress{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:20px;margin-top:24px}
+    .completion-progress h4{font-size:14px;font-weight:700;color:var(--white);margin-bottom:16px}
+    /* ===== PARALLAX EFFECTS ===== */
+    .parallax-bg{position:fixed;inset:0;pointer-events:none;z-index:-4;overflow:hidden}
+    .parallax-layer{position:absolute;width:100%;height:120%}
+    .parallax-layer-1{background:radial-gradient(ellipse at 20% 30%, rgba(201,169,97,0.12) 0%, transparent 50%);transform:translateY(0);transition:transform 0.1s linear}
+    .parallax-layer-2{background:radial-gradient(ellipse at 80% 70%, rgba(77,184,168,0.08) 0%, transparent 40%);transform:translateY(0);transition:transform 0.15s linear}
+    /* ===== HOVER GLOW ===== */
+    .glow-hover{position:relative}
+    .glow-hover::before{content:"";position:absolute;inset:-1px;background:linear-gradient(45deg,var(--gold),var(--green),var(--blue),var(--purple));background-size:400% 400%;border-radius:inherit;filter:blur(8px);opacity:0;transition:opacity 0.4s;z-index:-1}
+    .glow-hover:hover::before{opacity:0.5;animation:gradientMove 2s linear infinite}
+    @keyframes gradientMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    /* ===== STAGGERED ANIMATIONS ===== */
+    .stagger-children>*{opacity:0;animation:staggerFadeIn 0.5s var(--ease-out) forwards}
+    .stagger-children>*:nth-child(1){animation-delay:0.05s}
+    .stagger-children>*:nth-child(2){animation-delay:0.1s}
+    .stagger-children>*:nth-child(3){animation-delay:0.15s}
+    .stagger-children>*:nth-child(4){animation-delay:0.2s}
+    .stagger-children>*:nth-child(5){animation-delay:0.25s}
+    .stagger-children>*:nth-child(6){animation-delay:0.3s}
+    @keyframes staggerFadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
 <body>
+  <div class="parallax-bg">
+    <div class="parallax-layer parallax-layer-1"></div>
+    <div class="parallax-layer parallax-layer-2"></div>
+  </div>
   <div id="loginOverlay" class="login-overlay">
     <div class="login-card">
       <div class="login-brand">FA</div>
@@ -407,6 +482,11 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
         <div class="chart-title">Activity Log</div>
         <div class="activity-log" id="activityLog"></div>
       </div>
+      <div class="completion-progress">
+        <h4>Task Completion Progress</h4>
+        <div class="progress-label"><span>Overall Progress</span><span class="progress-value" id="progressPercent">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="completionBar" style="width:0%"></div></div>
+      </div>
     </section>
     <section class="section" id="intake">
       <div class="form-panel">
@@ -456,6 +536,12 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
   </div>
   <div class="toast" id="toast" aria-live="polite" aria-atomic="true"></div>
   <div class="save-indicator" id="saveIndicator"><span class="dot"></span><span>Saving...</span></div>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <div class="loading-spinner-large"></div>
+      <div class="loading-text">Loading HR Dashboard...</div>
+    </div>
+  </div>
   <button class="shortcuts-btn" onclick="toggleShortcuts()" title="Keyboard Shortcuts">⌨</button>
   <div class="shortcuts-modal" id="shortcutsModal" onclick="if(event.target===this)toggleShortcuts()">
     <div class="shortcuts-content" style="position:relative">
@@ -568,6 +654,51 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
       } catch(err) {
         console.log('Initial load check:', err.message);
       }
+      
+      // ===== SCROLL ANIMATIONS =====
+      const scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+      
+      setTimeout(() => {
+        qsa('.section, .stat-card, .chart-container').forEach(el => {
+          el.classList.add('scroll-animate');
+          scrollObserver.observe(el);
+        });
+        document.getElementById('loadingOverlay').classList.remove('active');
+      }, 300);
+      
+      // ===== ANIMATED COUNTERS =====
+      function animateCounters() {
+        qsa('.stat-card .value').forEach(el => {
+          const text = el.textContent;
+          const num = parseFloat(text.replace(/[^0-9.]/g, ''));
+          if (!isNaN(num) && text.match(/\d/)) {
+            const suffix = text.replace(/[0-9.]/g, '').trim();
+            let current = 0;
+            const increment = num / 30;
+            const timer = setInterval(() => {
+              current += increment;
+              if (current >= num) { current = num; clearInterval(timer); }
+              el.textContent = Math.round(current) + suffix;
+            }, 50);
+          }
+        });
+      }
+      
+      // ===== PARALLAX EFFECT =====
+      window.addEventListener('scroll', () => {
+        const scrolled = window.scrollY;
+        qsa('.parallax-layer').forEach((layer, i) => {
+          layer.style.transform = `translateY(${scrolled * (0.3 + i * 0.2)}px)`;
+        });
+      });
+      
+      setTimeout(() => { animateCounters(); }, 800);
     }, 500);
   </script>
   <script>
