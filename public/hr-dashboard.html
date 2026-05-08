@@ -163,6 +163,8 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
     .column-drop-zone.empty .empty-state{display:block}
     /* Analytics Section */
     .analytics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+    .stat-card.bento-item{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;text-align:center;transition:all 0.3s ease}
+    .stat-card.bento-item:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 30px rgba(88,166,255,0.1)}
     .stat-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:20px;text-align:center}
     .stat-card .label{color:var(--soft);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px}
     .stat-card .value{font-size:36px;font-weight:700;color:var(--white);font-family:'DM Serif Display',serif}
@@ -314,9 +316,62 @@ select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(
     .stagger-children>*:nth-child(5){animation-delay:0.25s}
     .stagger-children>*:nth-child(6){animation-delay:0.3s}
     @keyframes staggerFadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    /* ===== ANIMATE-UI PREMIUM ANIMATIONS ===== */
+    /* Animated Border Gradient */
+    .animated-border{position:relative}
+    .animated-border::before{content:"";position:absolute;inset:-2px;background:linear-gradient(90deg,var(--accent),var(--purple),var(--success),var(--accent));background-size:300% 100%;border-radius:inherit;z-index:-1;animation:borderGradient 3s linear infinite}
+    @keyframes borderGradient{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+    /* Bento Grid Pulse */
+    .bento-card{position:relative;overflow:hidden}
+    .bento-card::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,0.03) 50%,transparent 60%);animation:bentoShimmer 3s ease-in-out infinite}
+    @keyframes bentoShimmer{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
+    /* Floating Animation */
+    .float{animation:floatHover 3s ease-in-out infinite}
+    @keyframes floatHover{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    /* Shine Effect */
+    .shine{position:relative;overflow:hidden}
+    .shine::after{content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);animation:shineEffect 2s ease-in-out infinite}
+    @keyframes shineEffect{0%{left:-100%}50%,100%{left:100%}}
+    /* Dot Pattern Background */
+    .dot-pattern{background-image:radial-gradient(circle,var(--border) 1px,transparent 1px);background-size:20px 20px}
+    /* Blur Fade In */
+    .blur-fade{animation:blurFadeIn 0.6s ease-out forwards}
+    @keyframes blurFadeIn{from{opacity:0;filter:blur(10px);transform:scale(0.95)}to{opacity:1;filter:blur(0);transform:scale(1)}}
+    /* Scale In */
+    .scale-in{animation:scaleIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards}
+    @keyframes scaleIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+    /* Slide Up Fade */
+    .slide-up-fade{animation:slideUpFade 0.5s ease-out forwards}
+    @keyframes slideUpFade{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    /* Stagger delays */
+    .stagger-1{animation-delay:0.1s}.stagger-2{animation-delay:0.2s}.stagger-3{animation-delay:0.3s}.stagger-4{animation-delay:0.4s}.stagger-5{animation-delay:0.5s}
+    /* Gradient Text */
+    .gradient-text-animate{background:linear-gradient(90deg,var(--accent),var(--purple),var(--success));background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:gradientText 3s linear infinite}
+    @keyframes gradientText{to{background-position:200% center}}
+    /* Glow Pulse */
+    .glow-pulse{animation:glowPulse 2s ease-in-out infinite}
+    @keyframes glowPulse{0%,100%{box-shadow:0 0 20px rgba(88,166,255,0.1)}50%{box-shadow:0 0 30px rgba(88,166,255,0.3)}}
+    /* Motion Grid Background */
+    .motion-grid{background:linear-gradient(rgba(88,166,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(88,166,255,0.03) 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(circle at center,black 40%,transparent 80%)}
+    /* Hover Lift */
+    .hover-lift{transition:transform 0.3s ease,box-shadow 0.3s ease}
+    .hover-lift:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+    /* Focus Ring Animation */
+    .focus-ring:focus-visible{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+    /* Magnetic Button Effect */
+    .magnetic{cursor:pointer;transition:transform 0.2s ease}
+    .magnetic:hover{transform:scale(1.05)}
+    .magnetic:active{transform:scale(0.98)}
+    /* Bento Grid Styles */
+    .bento-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+    .bento-item{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;transition:all 0.3s ease}
+    .bento-item:hover{border-color:var(--accent);transform:translateY(-2px)}
+    /* Blur Border */
+    .blur-border{position:relative;background:var(--bg-elevated);border-radius:var(--radius-lg)}
+    .blur-border::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
   </style>
 </head>
-<body>
+<body class="motion-grid">
   <div class="parallax-bg">
     <div class="parallax-layer parallax-layer-1"></div>
     <div class="parallax-layer parallax-layer-2"></div>
