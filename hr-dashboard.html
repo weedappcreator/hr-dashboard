@@ -350,15 +350,25 @@
     let tasks = [];
     
     function loadTasks() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        tasks = saved ? JSON.parse(saved) : [...initialTasks];
-        if (!tasks.length) tasks = [...initialTasks];
-      } catch { tasks = [...initialTasks]; }
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved && saved !== "[]" && saved !== "") {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            tasks = parsed;
+            console.log("Loaded from storage:", tasks.length, "tasks");
+            return;
+          }
+        } catch(e) { console.log("Parse error:", e); }
+      }
+      tasks = [...initialTasks];
+      console.log("Using default tasks:", tasks.length);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     }
     
     function saveTasks() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); } catch {}
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      console.log("Saved:", tasks.length, "tasks");
     }
     
     function checkPassword() {
@@ -412,9 +422,10 @@
           logActivity("update", `Moved ${id} to ${status}`);
         }
       }
-      saveTasks();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
       renderBoard();
       updateMetrics();
+      renderActivityLog();
     }
     
     function updateMetrics() {
@@ -442,22 +453,25 @@
     }
     
     function resetToInitial() {
-      if (confirm("Reset all tasks?")) {
+      if (confirm("Reset to default tasks?")) {
         tasks = [...initialTasks];
-        saveTasks();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
         renderBoard();
         updateMetrics();
-        showToast("Tasks reset");
+        renderActivityLog();
+        showToast("Tasks reset to default");
       }
     }
     
     function deleteAllTasks() {
-      if (confirm("Delete ALL tasks?")) {
+      if (confirm("Delete ALL tasks? This cannot be undone.")) {
         tasks = [];
-        saveTasks();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        console.log("All tasks deleted, storage cleared");
         renderBoard();
         updateMetrics();
-        showToast("All tasks deleted");
+        renderActivityLog();
+        showToast("All tasks permanently deleted");
       }
     }
     
@@ -516,9 +530,10 @@
         completed: ""
       });
       logActivity("create", `Created ${id}`);
-      saveTasks();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
       renderBoard();
       updateMetrics();
+      renderActivityLog();
       e.target.reset();
       showToast("Task created");
     });
