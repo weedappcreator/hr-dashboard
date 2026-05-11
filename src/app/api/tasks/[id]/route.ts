@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getTasks, setTasks } from "../tasks/store";
+import { getTasks, setTasks } from "../store";
 
 export async function GET(
   request: Request,
