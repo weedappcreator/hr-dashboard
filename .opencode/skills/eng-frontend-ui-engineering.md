@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/eng-frontend-ui-engineering.md

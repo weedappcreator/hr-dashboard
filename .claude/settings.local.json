@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(__NEW_LINE_d6f58a7e5e74440d__ cd:*)",
+      "Bash(while read:*)",
+      "Bash(do mkdir:*)",
+      "Read(//Users/macbookpro/Downloads/**)",
+      "Bash(ls -lh design-figma-studio-v2*)",
+      "Bash(unzip -q design-figma-studio-v2*.zip)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm list:*)",
+      "Bash(npm install:*)",
+      "Bash(echo \"  ✓ SKILL.md created\" __NEW_LINE_2f3adc2205559cc5__ echo \"\" echo \"🔧 Script Files:\" ls -lh scripts/content-generator.js __NEW_LINE_2f3adc2205559cc5__ echo \"\" echo \"📚 Documentation Files:\" ls -lh MASTER_CONTENT_AUTOMATION*.md echo \"   + QUICK_START_CONTENT_CREATOR.md\" echo \"   + CONTENT_CREATOR_SYSTEM_TESTED.md\" __NEW_LINE_2f3adc2205559cc5__ echo \"\" echo \"👥 Sample Client:\" ls -lh sample-client-villa*.json __NEW_LINE_2f3adc2205559cc5__ echo \"\" echo \"📊 File Summary:\" wc -l scripts/content-generator.js wc -l .claude/skills/content-automation-master/SKILL.md __NEW_LINE_2f3adc2205559cc5__ echo \"\" echo \"✅ ALL FILES VERIFIED - SYSTEM COMPLETE\")"
+    ]
+  }
+}

@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/n8n-n8n-code-javascript.md

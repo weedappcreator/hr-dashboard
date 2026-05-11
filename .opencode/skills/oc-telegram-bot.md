@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/oc-telegram-bot.md

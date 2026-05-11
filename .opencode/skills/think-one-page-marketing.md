@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/think-one-page-marketing.md

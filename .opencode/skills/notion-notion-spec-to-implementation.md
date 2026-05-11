@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/notion-notion-spec-to-implementation.md

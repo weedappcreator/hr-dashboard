@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/figma-figma-create-design-system-rules.md

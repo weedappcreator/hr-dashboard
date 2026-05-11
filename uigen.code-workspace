@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../_Projects/uigen"
+		},
+		{
+			"path": "../_Projects/limpiacsv"
+		}
+	],
+	"settings": {}
+}

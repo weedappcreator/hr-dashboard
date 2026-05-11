@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "n8n-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "supergateway",
+        "--streamableHttp",
+        "https://edouardautomation.app.n8n.cloud/mcp-server/http",
+        "--header",
+        "authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwOGQ4MDM0Yi1mNjgzLTQ2MjUtYWY2Yy01MzlmNzI4YjZhZWIiLCJpc3MiOiJuOG4iLCJhdWQiOiJtY3Atc2VydmVyLWFwaSIsImp0aSI6ImI1OGJhMTBjLTBhMGItNGE3ZC1iZGRjLTYzN2VkZmQyODI3MiIsImlhdCI6MTc3NjA0NzcyOH0.s2TX4CpjqeuEaXYXYc051ZYfQYfd0SV6s1opPSE1fqA"
+      ]
+    }
+  }
+}

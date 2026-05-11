@@ -152,10 +152,10 @@ export default function HRDashboard() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      await fetch(`/api/tasks/${id}`, {
-        method: 'PATCH',
+      await fetch('/api/tasks', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ _action: 'patch', id, updates: { status } }),
       });
       fetchTasks();
     } catch (error) {
@@ -166,7 +166,11 @@ export default function HRDashboard() {
   const deleteTask = async (id: string) => {
     if (confirm('Delete this task?')) {
       try {
-        await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+        await fetch('/api/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ _action: 'delete', id }),
+        });
         fetchTasks();
       } catch (error) {
         console.error('Failed to delete task:', error);
@@ -177,10 +181,7 @@ export default function HRDashboard() {
   const deleteAllTasks = async () => {
     if (confirm('Delete ALL tasks? This cannot be undone.')) {
       try {
-        await fetch('/api/tasks', { 
-          method: 'DELETE',
-          headers: { 'x-hr-password': CORRECT_PASSWORD }
-        });
+        await fetch('/api/tasks', { method: 'DELETE' });
         fetchTasks();
       } catch (error) {
         console.error('Failed to delete all tasks:', error);

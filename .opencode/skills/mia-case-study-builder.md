@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/mia-case-study-builder.md

@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/oc-ai-image-gen.md

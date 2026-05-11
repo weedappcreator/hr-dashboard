@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/oc-apollo-outreach.md

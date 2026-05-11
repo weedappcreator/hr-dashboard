@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/mia-n8n-automation.md

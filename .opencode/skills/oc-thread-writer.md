@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/oc-thread-writer.md

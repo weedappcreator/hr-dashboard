@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/eng-ci-cd-and-automation.md

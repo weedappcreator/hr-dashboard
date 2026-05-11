@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/think-cro-methodology.md

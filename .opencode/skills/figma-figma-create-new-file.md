@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/figma-figma-create-new-file.md

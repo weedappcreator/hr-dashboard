@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/think-hundred-million-offers.md

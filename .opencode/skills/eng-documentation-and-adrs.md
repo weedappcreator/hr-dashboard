@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/eng-documentation-and-adrs.md

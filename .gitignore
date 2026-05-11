@@ -48,3 +48,8 @@ coverage/
 # Temporary
 ~
 .tmp/
+.vercel
+.env*.local
+
+# Local Netlify folder
+.netlify

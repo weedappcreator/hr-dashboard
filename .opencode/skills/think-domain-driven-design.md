@@ -1,0 +1,1 @@
+/Users/macbookpro/.config/opencode/skills/think-domain-driven-design.md
