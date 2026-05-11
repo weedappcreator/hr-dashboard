@@ -8,8 +8,11 @@
     "dev:claude": "LLM_PROVIDER=anthropic npm run dev",
     "dev:ollama": "LLM_PROVIDER=ollama npm run dev",
     "dev:opencode": "LLM_PROVIDER=opencode npm run dev",
-    "build": "NODE_OPTIONS='--require ./node-compat.cjs' next build",
-    "start": "NODE_OPTIONS='--require ./node-compat.cjs' next start",
+    "build": "next build",
+    "build:local": "NODE_OPTIONS='--require ./node-compat.cjs' next build",
+    "start": "next start",
+    "start:local": "NODE_OPTIONS='--require ./node-compat.cjs' next start",
+    "postinstall": "prisma generate",
     "lint": "next lint",
     "test": "vitest",
     "setup": "npm install && npx prisma generate && npx prisma migrate dev",
@@ -20,7 +23,8 @@
     "models": "opencode models"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "postdeploy": "npx prisma db seed"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "1.2.12",
