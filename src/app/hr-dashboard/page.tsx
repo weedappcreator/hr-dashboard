@@ -152,10 +152,10 @@ export default function HRDashboard() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      await fetch('/api/tasks', {
+      await fetch(`/api/tasks?id=${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _action: 'patch', id, updates: { status } }),
+        body: JSON.stringify({ _action: 'patch', updates: { status } }),
       });
       fetchTasks();
     } catch (error) {
@@ -166,10 +166,10 @@ export default function HRDashboard() {
   const deleteTask = async (id: string) => {
     if (confirm('Delete this task?')) {
       try {
-        await fetch('/api/tasks', {
+        await fetch(`/api/tasks?id=${id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ _action: 'delete', id }),
+          body: JSON.stringify({ _action: 'delete' }),
         });
         fetchTasks();
       } catch (error) {

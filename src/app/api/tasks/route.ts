@@ -1,67 +1,50 @@
 import { NextResponse } from "next/server";
 
+const initial = [
+  { id: "1", title: "Recruitment Pipeline Review", description: "Review open roles", status: "open", priority: "Medium", owner: "HR", createdAt: "", completedAt: null, taskNumber: 1 },
+  { id: "2", title: "New Employee Onboarding", description: "Prepare onboarding docs", status: "open", priority: "High", owner: "HR", createdAt: "", completedAt: null, taskNumber: 2 },
+  { id: "3", title: "Payroll Verification", description: "Verify payroll details", status: "progress", priority: "High", owner: "HR", createdAt: "", completedAt: null, taskNumber: 3 },
+  { id: "4", title: "Policy Review", description: "Review HR policy", status: "review", priority: "Medium", owner: "HR", createdAt: "", completedAt: null, taskNumber: 4 },
+  { id: "5", title: "Offboarding Complete", description: "Offboarding checklist done", status: "done", priority: "Low", owner: "HR", createdAt: "", completedAt: "", taskNumber: 5 },
+];
+
 const g = globalThis as any;
-if (!g.__tasks) {
-  g.__tasks = [
-    { id: "1", title: "Recruitment Pipeline Review", description: "Review open roles", status: "open", priority: "Medium", owner: "HR", createdAt: new Date().toISOString(), completedAt: null, taskNumber: 1 },
-    { id: "2", title: "New Employee Onboarding", description: "Prepare onboarding docs", status: "open", priority: "High", owner: "HR", createdAt: new Date().toISOString(), completedAt: null, taskNumber: 2 },
-    { id: "3", title: "Payroll Verification", description: "Verify payroll details", status: "progress", priority: "High", owner: "HR", createdAt: new Date().toISOString(), completedAt: null, taskNumber: 3 },
-    { id: "4", title: "Policy Review", description: "Review HR policy", status: "review", priority: "Medium", owner: "HR", createdAt: new Date().toISOString(), completedAt: null, taskNumber: 4 },
-    { id: "5", title: "Offboarding Complete", description: "Offboarding checklist done", status: "done", priority: "Low", owner: "HR", createdAt: new Date().toISOString(), completedAt: new Date().toISOString(), taskNumber: 5 },
-  ];
-  g.__nextTaskId = 6;
-}
+if (!g.__t) { g.__t = [...initial]; g.__n = 6; }
 
-function getTasks() { return g.__tasks; }
-function saveTasks(t: any[]) { g.__tasks = t; }
-
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const id = url.searchParams.get("id");
-  const tasks = getTasks();
-
-  if (id) {
-    const task = tasks.find((t: any) => t.id === id);
-    return task ? NextResponse.json(task) : NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-  return NextResponse.json(tasks);
+export async function GET() {
+  return NextResponse.json(g.__t);
 }
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  try {
+    const body = await req.json();
+    const url = new URL(req.url);
+    const id = url.searchParams.get("id");
 
-  if (body._action === "delete" && body.id) {
-    saveTasks(getTasks().filter((t: any) => t.id !== body.id));
-    return NextResponse.json({ message: "Deleted" });
+    if (body._action === "patch" && id) {
+      const idx = g.__t.findIndex((t: any) => t.id === id);
+      if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
+      Object.assign(g.__t[idx], body.updates);
+      if (body.updates?.status === "done") g.__t[idx].completedAt = new Date().toISOString();
+      if (body.updates?.status && body.updates.status !== "done") g.__t[idx].completedAt = null;
+      return NextResponse.json(g.__t[idx]);
+    }
+
+    if (body._action === "delete" && id) {
+      g.__t = g.__t.filter((t: any) => t.id !== id);
+      return NextResponse.json({ message: "Deleted" });
+    }
+
+    if (!body.title) return NextResponse.json({ error: "Title required" }, { status: 400 });
+    const task = { id: String(g.__n++), title: body.title, description: body.description || "", status: "open", priority: body.priority || "Medium", owner: "HR", createdAt: new Date().toISOString(), completedAt: null, taskNumber: g.__t.length + 1 };
+    g.__t.push(task);
+    return NextResponse.json(task, { status: 201 });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
   }
-
-  if (body._action === "patch" && body.id) {
-    const tasks = getTasks();
-    const idx = tasks.findIndex((t: any) => t.id === body.id);
-    if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    Object.assign(tasks[idx], body.updates);
-    if (body.updates?.status === "done") tasks[idx].completedAt = new Date().toISOString();
-    if (body.updates?.status && body.updates.status !== "done") tasks[idx].completedAt = null;
-    saveTasks(tasks);
-    return NextResponse.json(tasks[idx]);
-  }
-
-  if (!body.title || !body.title.trim()) {
-    return NextResponse.json({ error: "Title is required" }, { status: 400 });
-  }
-
-  const tasks = getTasks();
-  const id = String(g.__nextTaskId++);
-  const task = {
-    id, title: body.title.trim(), description: body.description?.trim() || "",
-    status: body.status || "open", priority: body.priority || "Medium", owner: "HR",
-    createdAt: new Date().toISOString(), completedAt: null, taskNumber: tasks.length + 1,
-  };
-  tasks.push(task);
-  return NextResponse.json(task, { status: 201 });
 }
 
-export async function DELETE(req: Request) {
-  saveTasks([]);
-  return NextResponse.json({ message: "All tasks deleted" });
+export async function DELETE() {
+  g.__t = [];
+  return NextResponse.json({ message: "Deleted" });
 }
