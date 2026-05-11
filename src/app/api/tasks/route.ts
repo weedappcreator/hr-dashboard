@@ -17,30 +17,51 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { title, description, priority, owner, status } = body;
 
-    if (!title) {
+    if (!title || title.trim().length === 0) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
     }
 
-const count = await prisma.task.count();
-      const task = await prisma.task.create({
-        data: {
-          title,
-          description: description || "",
-          priority: priority || "Medium",
-          owner: owner || "HR",
-          status: status || "open",
-        },
-      });
-      (task as Record<string, unknown>).taskNumber = count + 1;
+    if (title.length > 200) {
+      return NextResponse.json({ error: "Title too long (max 200 chars)" }, { status: 400 });
+    }
 
-    return NextResponse.json(task, { status: 201 });
+    const validStatuses = ['open', 'progress', 'review', 'done'];
+    const validPriorities = ['High', 'Medium', 'Low'];
+    
+    if (body.status && !validStatuses.includes(body.status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+    
+    if (body.priority && !validPriorities.includes(body.priority)) {
+      return NextResponse.json({ error: "Invalid priority" }, { status: 400 });
+    }
+
+    const count = await prisma.task.count();
+    const task = await prisma.task.create({
+      data: {
+        title: title.trim(),
+        description: description ? description.trim() : "",
+        priority: priority || "Medium",
+        owner: owner || "HR",
+        status: status || "open",
+      },
+    });
+
+    return NextResponse.json({ ...task, taskNumber: count + 1 }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: "Failed to create task" }, { status: 500 });
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
   try {
+    const authHeader = request.headers.get('x-hr-password');
+    const validPassword = process.env.HR_PASSWORD || 'FelixHR2026';
+    
+    if (authHeader !== validPassword) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
     await prisma.task.deleteMany();
     return NextResponse.json({ message: "All tasks deleted" });
   } catch (error) {

@@ -14,7 +14,9 @@ interface Task {
   taskNumber: number;
 }
 
-const CORRECT_PASSWORD = "FelixHR2026";
+const CORRECT_PASSWORD = process.env.NEXT_PUBLIC_HR_PASSWORD || "FelixHR2026";
+
+const sanitize = (str: string) => String(str).replace(/[<>\"'&]/g, '');
 
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState('');
@@ -175,7 +177,10 @@ export default function HRDashboard() {
   const deleteAllTasks = async () => {
     if (confirm('Delete ALL tasks? This cannot be undone.')) {
       try {
-        await fetch('/api/tasks', { method: 'DELETE' });
+        await fetch('/api/tasks', { 
+          method: 'DELETE',
+          headers: { 'x-hr-password': CORRECT_PASSWORD }
+        });
         fetchTasks();
       } catch (error) {
         console.error('Failed to delete all tasks:', error);
@@ -185,7 +190,7 @@ export default function HRDashboard() {
 
   const exportCSV = () => {
     const csv = 'ID,Title,Description,Status,Priority,Owner,Created,Completed\n' +
-      tasks.map(t => `"TASK-${t.taskNumber}","${t.title}","${t.description}","${t.status}","${t.priority}","${t.owner}","${t.createdAt}","${t.completedAt || ''}"`).join('\n');
+      tasks.map(t => `"${sanitize(t.id)}","${sanitize(t.title)}","${sanitize(t.description)}","${sanitize(t.status)}","${sanitize(t.priority)}","${sanitize(t.owner)}","${sanitize(t.createdAt)}","${sanitize(t.completedAt || '')}"`).join('\n');
     const a = document.createElement('a');
     a.href = 'data:text/csv,' + encodeURIComponent(csv);
     a.download = 'hr_tasks.csv';
