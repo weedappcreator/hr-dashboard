@@ -14,7 +14,94 @@ interface Task {
   taskNumber: number;
 }
 
+const CORRECT_PASSWORD = "FelixHR2026";
+
+function LoginScreen({ onLogin }: { onLogin: () => void }) {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === CORRECT_PASSWORD) {
+      localStorage.setItem('hr_auth', 'true');
+      onLogin();
+    } else {
+      setError(true);
+      setTimeout(() => setError(false), 2000);
+    }
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#0d1117',
+    }}>
+      <div style={{
+        background: '#161b22',
+        border: '1px solid #30363d',
+        borderRadius: '12px',
+        padding: '32px',
+        maxWidth: '360px',
+        width: '90%',
+        textAlign: 'center',
+      }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          margin: '0 auto 16px',
+          background: '#21262d',
+          borderRadius: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '18px',
+          fontWeight: 600,
+          color: '#58a6ff',
+        }}>FA</div>
+        <h2 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '6px', color: '#e6edf3' }}>HR Command Center</h2>
+        <p style={{ color: '#8b949e', fontSize: '14px', marginBottom: '20px' }}>Enter password to access</p>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            style={{
+              width: '100%',
+              padding: '12px',
+              border: `1px solid ${error ? '#f85149' : '#30363d'}`,
+              background: '#0d1117',
+              color: '#e6edf3',
+              borderRadius: '8px',
+              marginBottom: '12px',
+              textAlign: 'center',
+              fontSize: '14px',
+            }}
+          />
+          <button type="submit" style={{
+            width: '100%',
+            padding: '12px',
+            background: '#238636',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 500,
+            cursor: 'pointer',
+          }}>Access</button>
+        </form>
+        {error && (
+          <p style={{ color: '#f85149', fontSize: '13px', marginTop: '10px' }}>Incorrect password</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function HRDashboard() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -27,7 +114,9 @@ export default function HRDashboard() {
   });
 
   useEffect(() => {
-    fetchTasks();
+    const auth = localStorage.getItem('hr_auth') === 'true';
+    setIsAuthenticated(auth);
+    if (auth) fetchTasks();
   }, []);
 
   const fetchTasks = async () => {
@@ -127,6 +216,10 @@ export default function HRDashboard() {
     done: 'Done',
   };
 
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={() => { setIsAuthenticated(true); fetchTasks(); }} />;
+  }
+
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#e6edf3', background: '#0d1117' }}>
@@ -150,6 +243,9 @@ export default function HRDashboard() {
         .logo { display: flex; align-items: center; gap: 10px; }
         .logo-icon { width: 28px; height: 28px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--accent); }
         .logo-text { font-size: 15px; font-weight: 600; }
+        .nav { display: flex; gap: 4px; }
+        .nav a { color: var(--text-secondary); font-size: 14px; padding: 6px 12px; border-radius: 6px; }
+        .nav a:hover { color: var(--text); background: var(--bg-subtle); }
         .btn { display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; padding: 8px 14px; font-size: 14px; font-weight: 500; border: 1px solid transparent; cursor: pointer; transition: all 0.15s; }
         .btn-primary { background: var(--primary); color: #fff; }
         .btn-primary:hover { background: #2ea043; }
@@ -157,6 +253,8 @@ export default function HRDashboard() {
         .btn-secondary:hover { background: var(--bg-subtle); }
         .btn-danger { background: rgba(248,81,73,0.1); color: var(--danger); }
         .btn-danger:hover { background: rgba(248,81,73,0.2); }
+        .btn-ghost { background: transparent; color: var(--text-secondary); }
+        .btn-ghost:hover { background: var(--bg-subtle); color: var(--text); }
         .main { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
         .hero { display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: start; padding: 40px 0; }
         .hero-title { font-size: clamp(28px,4vw,42px); font-weight: 600; line-height: 1.2; margin-bottom: 12px; }
@@ -220,6 +318,7 @@ export default function HRDashboard() {
         .shortcut-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
         .shortcut-key { background: var(--bg); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-family: monospace; }
         .shortcut-desc { color: var(--text-secondary); font-size: 13px; }
+        .footer { border-top: 1px solid var(--border); padding: 20px; margin-top: 40px; text-align: center; color: #6e7681; font-size: 13px; }
         @media(max-width:900px) { .hero { grid-template-columns: 1fr; } .kanban { grid-template-columns: repeat(2,1fr); } .form-row { grid-template-columns: 1fr; } .form-submit { grid-column: span 1; } .analytics-grid { grid-template-columns: repeat(2,1fr); } }
       `}</style>
 
@@ -229,7 +328,13 @@ export default function HRDashboard() {
             <div className="logo-icon">FA</div>
             <div className="logo-text">HR Command Center</div>
           </div>
+          <nav className="nav">
+            <a href="#tasks">Tasks</a>
+            <a href="#analytics">Analytics</a>
+            <a href="#intake">New Task</a>
+          </nav>
           <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-ghost" onClick={() => { localStorage.removeItem('hr_auth'); setIsAuthenticated(false); }}>Logout</button>
             <a href="#tasks" className="btn btn-secondary">Tasks</a>
             <a href="#intake" className="btn btn-primary">+ New</a>
           </div>
@@ -340,18 +445,25 @@ export default function HRDashboard() {
           </form>
         </section>
 
-        <section className="analytics-grid">
-          <div className="analytics-card"><div className="analytics-label">Total Tasks</div><div className="analytics-value">{tasks.length}</div></div>
-          <div className="analytics-card"><div className="analytics-label">Completed</div><div className="analytics-value">{totalDone}</div></div>
-          <div className="analytics-card"><div className="analytics-label">In Progress</div><div className="analytics-value">{getStatusCount('progress')}</div></div>
-          <div className="analytics-card"><div className="analytics-label">Rate</div><div className="analytics-value">{completionRate}%</div></div>
+        <section id="analytics">
+          <h2 className="section-title" style={{ marginBottom: '20px' }}>Analytics</h2>
+          <div className="analytics-grid">
+            <div className="analytics-card"><div className="analytics-label">Total Tasks</div><div className="analytics-value">{tasks.length}</div></div>
+            <div className="analytics-card"><div className="analytics-label">Completed</div><div className="analytics-value">{totalDone}</div></div>
+            <div className="analytics-card"><div className="analytics-label">In Progress</div><div className="analytics-value">{getStatusCount('progress')}</div></div>
+            <div className="analytics-card"><div className="analytics-label">Rate</div><div className="analytics-value">{completionRate}%</div></div>
+          </div>
+
+          <div className="progress-section">
+            <div className="progress-title">Completion Progress</div>
+            <div className="progress-bar"><div className="progress-fill" style={{ width: `${completionRate}%` }}></div></div>
+            <div className="progress-label"><span>Progress</span><span>{completionRate}%</span></div>
+          </div>
         </section>
 
-        <div className="progress-section">
-          <div className="progress-title">Completion Progress</div>
-          <div className="progress-bar"><div className="progress-fill" style={{ width: `${completionRate}%` }}></div></div>
-          <div className="progress-label"><span>Progress</span><span>{completionRate}%</span></div>
-        </div>
+        <footer className="footer">
+          HR Task Command Center © 2026
+        </footer>
       </main>
 
       <button className="shortcuts-btn" onClick={() => setShowShortcuts(!showShortcuts)}>?</button>
