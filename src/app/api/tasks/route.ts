@@ -1,19 +1,35 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@libsql/client";
 
 const g = globalThis as any;
+const TURSO_URL = process.env.TURSO_DATABASE_URL;
+const TURSO_TOKEN = process.env.TURSO_AUTH_TOKEN;
 
-let db: any = null;
-try {
-  if (process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN) {
-    db = createClient({
-      url: process.env.TURSO_DATABASE_URL,
-      authToken: process.env.TURSO_AUTH_TOKEN,
+const HTTP_URL = TURSO_URL ? TURSO_URL.replace("libsql://", "https://") : "";
+
+async function tursoQuery(sql: string, args?: any[]) {
+  if (!TURSO_URL || !TURSO_TOKEN) return null;
+  try {
+    const body: any = { requests: [{ type: "execute", stmt: args ? { sql, args } : { sql } }] };
+    const res = await fetch(`${HTTP_URL}/v2/pipeline`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${TURSO_TOKEN}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
-    console.log("Connected to Turso database");
+    const data = await res.json();
+    return data?.results?.[0]?.response?.result?.rows || null;
+  } catch (e) {
+    console.error("Turso error:", e);
+    return null;
   }
-} catch (e) {
-  console.log("Turso not available, using in-memory:", e);
+}
+
+function rowsToTasks(rows: any[] | null) {
+  if (!rows) return null;
+  return rows.map((r: any, i: number) => ({
+    id: r[0]?.value || "", title: r[1]?.value || "", description: r[2]?.value || "",
+    status: r[3]?.value || "open", priority: r[4]?.value || "Medium", owner: r[5]?.value || "HR",
+    createdAt: r[6]?.value || "", completedAt: r[7]?.value || null, taskNumber: i + 1,
+  }));
 }
 
 if (!g.__t) {
@@ -27,61 +43,10 @@ if (!g.__t) {
   g.__n = 6;
 }
 
-async function getTasksDB() {
-  if (!db) return null;
-  try {
-    const result = await db.execute("SELECT * FROM Task ORDER BY createdAt ASC");
-    return result.rows.map((r: any, i: number) => ({
-      id: r.id, title: r.title, description: r.description || "", status: r.status,
-      priority: r.priority, owner: r.owner || "HR", createdAt: r.createdAt, completedAt: r.completedAt,
-      taskNumber: i + 1,
-    }));
-  } catch { return null; }
-}
-
-async function createTaskDB(task: any) {
-  if (!db) return false;
-  try {
-    await db.execute({
-      sql: "INSERT INTO Task (id, title, description, status, priority, owner, createdAt, completedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      args: [task.id, task.title, task.description, task.status, task.priority, task.owner, task.createdAt, task.completedAt],
-    });
-    return true;
-  } catch { return false; }
-}
-
-async function updateTaskDB(id: string, updates: any) {
-  if (!db) return false;
-  try {
-    const sets: string[] = [];
-    const args: any[] = [];
-    for (const [k, v] of Object.entries(updates)) {
-      sets.push(`${k} = ?`);
-      args.push(v);
-    }
-    args.push(id);
-    await db.execute({ sql: `UPDATE Task SET ${sets.join(", ")} WHERE id = ?`, args });
-    return true;
-  } catch { return false; }
-}
-
-async function deleteTaskDB(id: string) {
-  if (!db) return false;
-  try { await db.execute({ sql: "DELETE FROM Task WHERE id = ?", args: [id] }); return true; }
-  catch { return false; }
-}
-
-async function deleteAllDB() {
-  if (!db) return false;
-  try { await db.execute("DELETE FROM Task"); return true; }
-  catch { return false; }
-}
-
 export async function GET() {
-  if (db) {
-    const tasks = await getTasksDB();
-    if (tasks) return NextResponse.json(tasks);
-  }
+  const rows = await tursoQuery("SELECT * FROM Task ORDER BY rowid ASC");
+  const tasks = rowsToTasks(rows);
+  if (tasks) return NextResponse.json(tasks);
   return NextResponse.json(g.__t);
 }
 
@@ -91,17 +56,14 @@ export async function POST(req: Request) {
   const id = url.searchParams.get("id");
 
   if (body._action === "patch" && id) {
-    if (db) { await updateTaskDB(id, { status: body.updates.status, completedAt: body.updates.status === "done" ? new Date().toISOString() : null }); }
+    await tursoQuery(`UPDATE Task SET status = ?, completedAt = ? WHERE id = ?`, [body.updates.status, body.updates.status === "done" ? new Date().toISOString() : null, id]);
     const idx = g.__t.findIndex((t: any) => t.id === id);
-    if (idx >= 0) {
-      g.__t[idx].status = body.updates.status;
-      g.__t[idx].completedAt = body.updates.status === "done" ? new Date().toISOString() : null;
-    }
+    if (idx >= 0) { g.__t[idx].status = body.updates.status; g.__t[idx].completedAt = body.updates.status === "done" ? new Date().toISOString() : null; }
     return NextResponse.json({ message: "Updated" });
   }
 
   if (body._action === "delete" && id) {
-    if (db) await deleteTaskDB(id);
+    await tursoQuery("DELETE FROM Task WHERE id = ?", [id]);
     g.__t = g.__t.filter((t: any) => t.id !== id);
     return NextResponse.json({ message: "Deleted" });
   }
@@ -110,12 +72,13 @@ export async function POST(req: Request) {
   const now = new Date().toISOString();
   const task = { id: String(g.__n++), title: body.title, description: body.description || "", status: "open", priority: body.priority || "Medium", owner: "HR", createdAt: now, completedAt: null, taskNumber: g.__t.length + 1 };
 
-  if (!(await createTaskDB(task))) g.__t.push(task);
+  const ok = await tursoQuery("INSERT INTO Task (id, title, description, status, priority, owner, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)", [task.id, task.title, task.description, task.status, task.priority, task.owner, task.createdAt]);
+  if (!ok) g.__t.push(task);
   return NextResponse.json(task, { status: 201 });
 }
 
 export async function DELETE() {
-  if (db) await deleteAllDB();
+  await tursoQuery("DELETE FROM Task");
   g.__t = [];
   return NextResponse.json({ message: "Deleted" });
 }
