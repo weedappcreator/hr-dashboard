@@ -385,7 +385,17 @@
     }
     
     async function saveOne(task) {
-      await sb("POST", "tasks?on_conflict=id", { id: task.id, title: task.title, description: task.description, status: task.status, priority: task.priority || "Medium", owner: task.owner || "HR", created_at: task.created, completed_at: task.completed || null });
+      try {
+        const res = await fetch(SB_URL + "/rest/v1/tasks", {
+          method: "POST",
+          headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json", Prefer: "return=representation" },
+          body: JSON.stringify({ title: task.title, description: task.description, status: task.status, priority: task.priority || "Medium", owner: task.owner || "HR", created_at: task.created, completed_at: task.completed || null }),
+        });
+        if (!res.ok) { const e = await res.text(); console.error("Supabase error:", e); showToast("Save failed: server error"); return null; }
+        const data = await res.json();
+        if (data && data[0]) task.id = data[0].id;
+        return data;
+      } catch(e) { console.error("Network error:", e); showToast("Network error - task saved locally only"); return null; }
     }
     
     function checkPassword() {
