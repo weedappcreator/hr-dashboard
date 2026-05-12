@@ -349,9 +349,11 @@
     const SB_KEY = "sb_publishable_yMMh0Ez4nm1Amyvzyq7vLQ_sqMTyHhT";
     
     async function sb(method, path, body) {
+      const headers = { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" };
+      if (method !== "GET") headers["Prefer"] = "return=representation";
       const res = await fetch(SB_URL + "/rest/v1/" + path, {
         method,
-        headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json", Prefer: "return=representation" },
+        headers,
         body: body ? JSON.stringify(body) : undefined,
       });
       if (res.status === 204 || res.status === 201) { const t = await res.text(); return t ? JSON.parse(t) : []; }
