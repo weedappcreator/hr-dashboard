@@ -17,31 +17,24 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const url = new URL(req.url);
-    const id = url.searchParams.get("id");
+  const body = await req.json();
+  const url = new URL(req.url);
+  const id = url.searchParams.get("id");
 
-    if (body._action === "patch" && id) {
-      const idx = g.__t.findIndex((t: any) => t.id === id);
-      if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
-      Object.assign(g.__t[idx], body.updates);
-      if (body.updates?.status === "done") g.__t[idx].completedAt = new Date().toISOString();
-      if (body.updates?.status && body.updates.status !== "done") g.__t[idx].completedAt = null;
-      return NextResponse.json(g.__t[idx]);
-    }
+  if (body._action === "patch" && id) {
+    const idx = g.__t.findIndex((t: any) => t.id === id);
+    if (idx >= 0) { Object.assign(g.__t[idx], body.updates); if (body.updates?.status === "done") g.__t[idx].completedAt = new Date().toISOString(); if (body.updates?.status && body.updates.status !== "done") g.__t[idx].completedAt = null; }
+    return NextResponse.json({ message: "Updated" });
+  }
+  if (body._action === "delete" && id) {
+    g.__t = g.__t.filter((t: any) => t.id !== id);
+    return NextResponse.json({ message: "Deleted" });
+  }
+  if (!body.title?.trim()) return NextResponse.json({ error: "Title required" }, { status: 400 });
 
-    if (body._action === "delete" && id) {
-      g.__t = g.__t.filter((t: any) => t.id !== id);
-      return NextResponse.json({ message: "Deleted" });
-    }
-
-    if (!body.title?.trim()) return NextResponse.json({ error: "Title required" }, { status: 400 });
-    const now = new Date().toISOString();
-    const task: any = { id: String(g.__n++), title: body.title.trim(), description: body.description?.trim() || "", status: "open", priority: body.priority || "Medium", owner: body.owner || "HR", createdAt: now, completedAt: null, taskNumber: g.__t.length + 1 };
-    g.__t.push(task);
-    return NextResponse.json(task, { status: 201 });
-  } catch { return NextResponse.json({ error: "Invalid request" }, { status: 400 }); }
+  const task: any = { id: String(g.__n++), title: body.title.trim(), description: body.description?.trim() || "", status: "open", priority: body.priority || "Medium", owner: body.owner || "HR", createdAt: new Date().toISOString(), completedAt: null, taskNumber: g.__t.length + 1 };
+  g.__t.push(task);
+  return NextResponse.json(task, { status: 201 });
 }
 
 export async function DELETE(request: Request) {
