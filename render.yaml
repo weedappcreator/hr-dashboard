@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: hr-dashboard
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: DATABASE_URL
+        sync: false
+      - key: HR_PASSWORD
+        sync: false
+      - key: NEXT_PUBLIC_HR_PASSWORD
+        sync: false
