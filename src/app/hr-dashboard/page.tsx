@@ -1,6 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const SB = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pbajbvzjadplzkxfejbu.supabase.co',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_yMMh0Ez4nm1Amyvzyq7vLQ_sqMTyHhT'
+);
 
 interface Task {
   id: string;
@@ -15,7 +21,6 @@ interface Task {
 }
 
 const CORRECT_PASSWORD = process.env.NEXT_PUBLIC_HR_PASSWORD || "FelixHR2026";
-
 const sanitize = (str: string) => String(str).replace(/[<>&]/g, '');
 
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
@@ -131,6 +136,20 @@ export default function HRDashboard() {
 
   const fetchTasks = async () => {
     try {
+      const { data, error } = await SB.from('tasks').select('*').order('created_at', { ascending: true });
+      if (!error && data && data.length > 0) {
+        setTasks(data.map((t: any, i: number) => ({
+          id: t.id, title: t.title, description: t.description || '', status: t.status,
+          priority: t.priority, owner: t.owner || 'HR', createdAt: t.created_at, completedAt: t.completed_at,
+          taskNumber: i + 1,
+        })));
+        setLoading(false);
+        return;
+      }
+    } catch {}
+
+    // Fallback to API
+    try {
       const res = await fetch('/api/tasks');
       const data = await res.json();
       setTasks(data);
@@ -146,19 +165,21 @@ export default function HRDashboard() {
     if (saving) return;
     setSaving(true);
     try {
-      const res = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      if (res.ok) {
+      const { data, error } = await SB.from('tasks').insert({
+        title: formData.title.trim(),
+        description: formData.description?.trim() || '',
+        status: 'open',
+        priority: formData.priority || 'Medium',
+        owner: formData.owner || 'HR',
+      }).select().single();
+
+      if (!error && data) {
         setFormData({ title: '', description: '', priority: 'Medium', owner: 'HR' });
         fetchTasks();
       } else {
         showToast('Failed to create task');
       }
-    } catch (error) {
-      console.error('Failed to create task:', error);
+    } catch {
       showToast('Network error');
     } finally {
       setSaving(false);
@@ -167,14 +188,9 @@ export default function HRDashboard() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch(`/api/tasks?id=${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _action: 'patch', updates: { status } }),
-      });
-      if (res.ok) fetchTasks();
-    } catch (error) {
-      console.error('Failed to update task:', error);
+      await SB.from('tasks').update({ status, completed_at: status === 'done' ? new Date().toISOString() : null }).eq('id', id);
+      fetchTasks();
+    } catch {
       showToast('Failed to update');
     }
   };
@@ -182,14 +198,9 @@ export default function HRDashboard() {
   const deleteTask = async (id: string) => {
     if (confirm('Delete this task?')) {
       try {
-        await fetch(`/api/tasks?id=${id}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ _action: 'delete' }),
-        });
+        await SB.from('tasks').delete().eq('id', id);
         fetchTasks();
-      } catch (error) {
-        console.error('Failed to delete task:', error);
+      } catch {
         showToast('Failed to delete');
       }
     }
@@ -198,14 +209,9 @@ export default function HRDashboard() {
   const deleteAllTasks = async () => {
     if (confirm('Delete ALL tasks? This cannot be undone.')) {
       try {
-        const res = await fetch('/api/tasks', {
-          method: 'DELETE',
-          headers: { 'x-auth': CORRECT_PASSWORD },
-        });
-        if (res.ok) fetchTasks();
-        else showToast('Unauthorized');
-      } catch (error) {
-        console.error('Failed to delete all tasks:', error);
+        await SB.from('tasks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        fetchTasks();
+      } catch {
         showToast('Failed to delete all');
       }
     }
