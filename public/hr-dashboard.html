@@ -7,22 +7,27 @@
   <title>HR Task Command Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
-      --bg:#0d1117;--bg-elevated:#161b22;--bg-subtle:#21262d;--border:#30363d;
-      --text:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;
-      --accent:#58a6ff;--success:#3fb950;--warning:#d29922;--danger:#f85149;--purple:#a371f7;
-      --primary:#238636;--primary-hover:#2ea043;
-      --shadow-sm:0 1px 2px rgba(0,0,0,0.1);--shadow-md:0 4px 12px rgba(0,0,0,0.15);--shadow-lg:0 8px 24px rgba(0,0,0,0.2);
-      --radius-sm:6px;--radius-md:8px;--radius-lg:12px;
-      --ease:cubic-bezier(.2,.8,.2,1)
+      --bg:#0a0e14;--bg-elevated:#131820;--bg-subtle:#1c2330;--border:#2a3346;
+      --text:#e2e8f0;--text-secondary:#8899b4;--text-muted:#5a6a82;
+      --accent:#6b9aff;--success:#34d399;--warning:#fbbf24;--danger:#f87171;--purple:#a78bfa;
+      --primary:#2563eb;--primary-hover:#3b82f6;
+      --shadow-sm:0 1px 2px rgba(0,0,0,0.2);--shadow-md:0 4px 16px rgba(0,0,0,0.25);--shadow-lg:0 8px 32px rgba(0,0,0,0.3);
+      --radius-sm:6px;--radius-md:10px;--radius-lg:16px;
+      --ease:cubic-bezier(.22,1,.36,1)
     }
     html{scroll-behavior:smooth}
-    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;color:var(--text);background:var(--bg);line-height:1.5}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;color:var(--text);background:var(--bg);line-height:1.6}
+    h1,h2,h3,.hero-title,.logo-text{font-family:'DM Serif Display',Georgia,serif;font-weight:400}
     a{color:inherit;text-decoration:none}
     button,input,select,textarea{font:inherit}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 transparent}50%{box-shadow:0 0 20px rgba(107,154,255,0.15)}}
+    @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
     
     /* Header */
     .header{position:sticky;top:0;z-index:50;background:rgba(13,17,23,0.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
@@ -53,14 +58,15 @@
     
     /* Hero */
     .hero{display:grid;grid-template-columns:1fr 320px;gap:40px;align-items:start;padding:40px 0}
-    .hero-title{font-size:clamp(28px,4vw,42px);font-weight:600;line-height:1.2;margin-bottom:12px}
+    .hero-title{font-size:clamp(28px,4vw,42px);line-height:1.15;margin-bottom:12px;animation:slideUp 0.6s var(--ease) both}
+    .hero-desc{color:var(--text-secondary);font-size:15px;margin-bottom:20px;max-width:520px;animation:fadeIn 0.6s var(--ease) 0.1s both}
     .hero-desc{color:var(--text-secondary);font-size:15px;margin-bottom:20px;max-width:520px}
     .hero-actions{display:flex;gap:10px;margin-bottom:24px}
-    .tags{display:flex;gap:8px;flex-wrap:wrap}
+    .tags{display:flex;gap:8px;flex-wrap:wrap;animation:fadeIn 0.6s var(--ease) 0.2s both}
     .tag{background:var(--bg-subtle);color:var(--text-secondary);padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;border:1px solid var(--border)}
     
     /* Stats Card */
-    .stats-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+    .stats-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;animation:fadeIn 0.6s var(--ease) 0.15s both}
     .stats-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
     .stats-title{font-size:14px;font-weight:600}
     .stats-badge{font-size:11px;background:var(--accent-subtle);color:var(--accent);padding:4px 8px;border-radius:var(--radius-sm)}
@@ -84,8 +90,8 @@
     .col-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
     .col-title{font-size:14px;font-weight:600}
     .col-count{font-size:12px;color:var(--text-muted);background:var(--bg);padding:2px 8px;border-radius:var(--radius-sm)}
-    .task-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;margin-bottom:10px;cursor:grab;transition:border-color 0.15s}
-    .task-card:hover{border-color:var(--accent)}
+    .task-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;margin-bottom:10px;cursor:grab;transition:all 0.2s var(--ease);position:relative;animation:fadeIn 0.4s var(--ease) both}
+    .task-card:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-md)}
     .task-card::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;background:var(--accent);border-radius:0 2px 2px 0}
     .task-card{position:relative}
     .kanban-col[data-status="progress"] .task-card::before{background:var(--warning)}
@@ -400,11 +406,11 @@
         const status = col.dataset.status;
         const filtered = tasks.filter(t => t.status === status);
         const list = col.querySelector(".task-list");
-        list.innerHTML = filtered.map(t => `
-          <div class="task-card" data-id="${t.id}" data-title="${t.title}" data-desc="${t.description}">
-            <div class="task-id">${t.id}</div>
-            <div class="task-title">${t.title}</div>
-            <div class="task-desc">${t.description}</div>
+        list.innerHTML = filtered.map((t, i) => `
+          <div class="task-card" style="animation-delay:${i * 0.05}s" data-id="${t.id}" data-title="${t.title.replace(/[<>&]/g,'')}" data-desc="${t.description.replace(/[<>&]/g,'')}">
+            <div class="task-id">${t.id.replace(/[<>&]/g,'')}</div>
+            <div class="task-title">${t.title.replace(/[<>&]/g,'')}</div>
+            <div class="task-desc">${t.description.replace(/[<>&]/g,'')}</div>
             <div class="task-meta"><span>${t.owner || 'HR'}</span><span>${t.created}</span></div>
             <select class="task-status" onchange="updateStatus('${t.id}',this.value)">
               <option value="open" ${t.status==='open'?'selected':''}>Open</option>
