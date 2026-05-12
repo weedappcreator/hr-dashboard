@@ -16,7 +16,7 @@ interface Task {
 
 const CORRECT_PASSWORD = process.env.NEXT_PUBLIC_HR_PASSWORD || "FelixHR2026";
 
-const sanitize = (str: string) => String(str).replace(/[<>\"'&]/g, '');
+const sanitize = (str: string) => String(str).replace(/[<>&]/g, '');
 
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState('');
@@ -113,7 +113,15 @@ export default function HRDashboard() {
     title: '',
     description: '',
     priority: 'Medium',
+    owner: 'HR',
   });
+  const [saving, setSaving] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(''), 3000);
+  };
 
   useEffect(() => {
     const auth = localStorage.getItem('hr_auth') === 'true';
@@ -135,6 +143,8 @@ export default function HRDashboard() {
 
   const createTask = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
+    setSaving(true);
     try {
       const res = await fetch('/api/tasks', {
         method: 'POST',
@@ -142,24 +152,30 @@ export default function HRDashboard() {
         body: JSON.stringify(formData),
       });
       if (res.ok) {
-        setFormData({ title: '', description: '', priority: 'Medium' });
+        setFormData({ title: '', description: '', priority: 'Medium', owner: 'HR' });
         fetchTasks();
+      } else {
+        showToast('Failed to create task');
       }
     } catch (error) {
       console.error('Failed to create task:', error);
+      showToast('Network error');
+    } finally {
+      setSaving(false);
     }
   };
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      await fetch(`/api/tasks?id=${id}`, {
+      const res = await fetch(`/api/tasks?id=${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ _action: 'patch', updates: { status } }),
       });
-      fetchTasks();
+      if (res.ok) fetchTasks();
     } catch (error) {
       console.error('Failed to update task:', error);
+      showToast('Failed to update');
     }
   };
 
@@ -174,6 +190,7 @@ export default function HRDashboard() {
         fetchTasks();
       } catch (error) {
         console.error('Failed to delete task:', error);
+        showToast('Failed to delete');
       }
     }
   };
@@ -181,10 +198,15 @@ export default function HRDashboard() {
   const deleteAllTasks = async () => {
     if (confirm('Delete ALL tasks? This cannot be undone.')) {
       try {
-        await fetch('/api/tasks', { method: 'DELETE' });
-        fetchTasks();
+        const res = await fetch('/api/tasks', {
+          method: 'DELETE',
+          headers: { 'x-auth': CORRECT_PASSWORD },
+        });
+        if (res.ok) fetchTasks();
+        else showToast('Unauthorized');
       } catch (error) {
         console.error('Failed to delete all tasks:', error);
+        showToast('Failed to delete all');
       }
     }
   };
@@ -444,10 +466,10 @@ export default function HRDashboard() {
               </div>
               <div className="form-group">
                 <label className="form-label">Owner</label>
-                <input type="text" className="form-input" placeholder="HR" defaultValue="HR" />
+                <input type="text" className="form-input" placeholder="HR" value={formData.owner} onChange={(e) => setFormData({ ...formData, owner: e.target.value })} />
               </div>
             </div>
-            <button type="submit" className="btn btn-primary form-submit">Create Task</button>
+            <button type="submit" className="btn btn-primary form-submit" disabled={saving}>{saving ? 'Creating...' : 'Create Task'}</button>
           </form>
         </section>
 
@@ -482,6 +504,11 @@ export default function HRDashboard() {
           <div className="shortcut-row"><span className="shortcut-key">?</span><span className="shortcut-desc">Shortcuts</span></div>
         </div>
       </div>
+      {toastMsg && (
+        <div style={{ position: 'fixed', bottom: '80px', right: '20px', zIndex: 80, background: '#161b22', border: '1px solid #30363d', borderRadius: '8px', padding: '12px 16px', fontSize: '13px', color: '#e6edf3', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+          {toastMsg}
+        </div>
+      )}
     </div>
   );
 }
