@@ -339,36 +339,45 @@
   
   <script>
     const CORRECT_PASSWORD = "FelixHR2026";
-    const STORAGE_KEY = "fa_hr_tasks_v6";
-    const initialTasks = [
-      {id:"TASK-001",title:"Recruitment Pipeline Review",description:"Review open roles and candidate stages",status:"open",created:"2026-05-08",completed:""},
-      {id:"TASK-002",title:"New Employee Onboarding",description:"Prepare onboarding documents and access",status:"open",created:"2026-05-08",completed:""},
-      {id:"TASK-003",title:"Payroll Verification",description:"Verify payroll details and approvals",status:"progress",created:"2026-05-08",completed:""},
-      {id:"TASK-004",title:"Policy Review",description:"Review HR policy for employee requests",status:"review",created:"2026-05-07",completed:""},
-      {id:"TASK-005",title:"Offboarding Complete",description:"Employee offboarding checklist completed",status:"done",created:"2026-05-06",completed:"2026-05-08"}
-    ];
-    let tasks = [];
+    const SB_URL = "https://pbajbvzjadplzkxfejbu.supabase.co";
+    const SB_KEY = "sb_publishable_yMMh0Ez4nm1Amyvzyq7vLQ_sqMTyHhT";
     
-    function loadTasks() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved && saved !== "[]" && saved !== "") {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            tasks = parsed;
-            console.log("Loaded from storage:", tasks.length, "tasks");
-            return;
-          }
-        } catch(e) { console.log("Parse error:", e); }
+    async function sb(method, path, body) {
+      const res = await fetch(SB_URL + "/rest/v1/" + path, {
+        method,
+        headers: { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json", Prefer: "return=representation" },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (res.status === 204 || res.status === 201) { const t = await res.text(); return t ? JSON.parse(t) : []; }
+      if (!res.ok) return null;
+      return await res.json();
+    }
+
+    let tasks = [];
+
+    async function loadTasks() {
+      const data = await sb("GET", "tasks?order=created_at.asc");
+      if (data && data.length > 0) { tasks = data.map((t, i) => ({ id: t.id, title: t.title, description: t.description || "", status: t.status, priority: t.priority || "Medium", owner: t.owner || "HR", created: t.created_at ? t.created_at.slice(0,10) : "", completed: t.completed_at ? t.completed_at.slice(0,10) : "" })); }
+      if (tasks.length === 0) {
+        tasks = [
+          {id:"TASK-001",title:"Recruitment Pipeline Review",description:"Review open roles and candidate stages",status:"open",created:new Date().toISOString().slice(0,10),completed:""},
+          {id:"TASK-002",title:"New Employee Onboarding",description:"Prepare onboarding documents and access",status:"open",created:new Date().toISOString().slice(0,10),completed:""},
+          {id:"TASK-003",title:"Payroll Verification",description:"Verify payroll details and approvals",status:"progress",created:new Date().toISOString().slice(0,10),completed:""},
+          {id:"TASK-004",title:"Policy Review",description:"Review HR policy for employee requests",status:"review",created:new Date().toISOString().slice(0,10),completed:""},
+          {id:"TASK-005",title:"Offboarding Complete",description:"Employee offboarding checklist completed",status:"done",created:new Date().toISOString().slice(0,10),completed:new Date().toISOString().slice(0,10)}
+        ];
       }
-      tasks = [...initialTasks];
-      console.log("Using default tasks:", tasks.length);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      renderBoard();
+      updateMetrics();
     }
     
-    function saveTasks() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-      console.log("Saved:", tasks.length, "tasks");
+    async function saveTasks() {
+      await sb("DELETE", "tasks?id=neq.00000000-0000-0000-0000-000000000000");
+      if (tasks.length > 0) await sb("POST", "tasks", tasks.map(t => ({ id: t.id, title: t.title, description: t.description, status: t.status, priority: t.priority || "Medium", owner: t.owner || "HR", created_at: t.created, completed_at: t.completed || null })));
+    }
+    
+    async function saveOne(task) {
+      await sb("POST", "tasks?on_conflict=id", { id: task.id, title: task.title, description: task.description, status: task.status, priority: task.priority || "Medium", owner: task.owner || "HR", created_at: task.created, completed_at: task.completed || null });
     }
     
     function checkPassword() {
@@ -410,19 +419,21 @@
       });
     }
     
-    function updateStatus(id, status) {
+    async function updateStatus(id, status) {
       if (status === "delete") {
         tasks = tasks.filter(t => t.id !== id);
+        await sb("DELETE", "tasks?id=eq." + id);
         logActivity("delete", `Deleted ${id}`);
       } else {
         const task = tasks.find(t => t.id === id);
         if (task) {
           task.status = status;
           if (status === "done") task.completed = new Date().toISOString().split("T")[0];
+          else task.completed = "";
+          await sb("PATCH", "tasks?id=eq." + id, { status: task.status, completed_at: task.completed || null });
           logActivity("update", `Moved ${id} to ${status}`);
         }
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
       renderBoard();
       updateMetrics();
       renderActivityLog();
@@ -452,10 +463,17 @@
       });
     }
     
-    function resetToInitial() {
+    async function resetToInitial() {
       if (confirm("Reset to default tasks?")) {
-        tasks = [...initialTasks];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        await sb("DELETE", "tasks?id=neq.00000000-0000-0000-0000-000000000000");
+        tasks = [
+          {id:"TASK-001",title:"Recruitment Pipeline Review",description:"Review open roles and candidate stages",status:"open",created:new Date().toISOString().slice(0,10),completed:""},
+          {id:"TASK-002",title:"New Employee Onboarding",description:"Prepare onboarding documents and access",status:"open",created:new Date().toISOString().slice(0,10),completed:""},
+          {id:"TASK-003",title:"Payroll Verification",description:"Verify payroll details and approvals",status:"progress",created:new Date().toISOString().slice(0,10),completed:""},
+          {id:"TASK-004",title:"Policy Review",description:"Review HR policy for employee requests",status:"review",created:new Date().toISOString().slice(0,10),completed:""},
+          {id:"TASK-005",title:"Offboarding Complete",description:"Employee offboarding checklist completed",status:"done",created:new Date().toISOString().slice(0,10),completed:new Date().toISOString().slice(0,10)}
+        ];
+        await saveTasks();
         renderBoard();
         updateMetrics();
         renderActivityLog();
@@ -463,11 +481,11 @@
       }
     }
     
-    function deleteAllTasks() {
+    async function deleteAllTasks() {
       if (confirm("Delete ALL tasks? This cannot be undone.")) {
         tasks = [];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-        console.log("All tasks deleted, storage cleared");
+        await sb("DELETE", "tasks?id=neq.00000000-0000-0000-0000-000000000000");
+        console.log("All tasks deleted");
         renderBoard();
         updateMetrics();
         renderActivityLog();
@@ -518,19 +536,20 @@
       setTimeout(() => i.remove(), 2500);
     }
     
-    document.getElementById("intakeForm").addEventListener("submit", e => {
+    document.getElementById("intakeForm").addEventListener("submit", async e => {
       e.preventDefault();
       const id = "TASK-" + String(tasks.length + 1).padStart(3, "0");
-      tasks.push({
+      const task = {
         id,
         title: document.getElementById("requestTitle").value,
         description: document.getElementById("requestDescription").value,
         status: "open",
         created: document.getElementById("requestCreatedDate").value || new Date().toISOString().split("T")[0],
         completed: ""
-      });
+      };
+      tasks.push(task);
+      await saveOne(task);
       logActivity("create", `Created ${id}`);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
       renderBoard();
       updateMetrics();
       renderActivityLog();
@@ -547,10 +566,13 @@
       }
     });
     
-    loadTasks();
-    renderBoard();
-    updateMetrics();
-    renderActivityLog();
+    async function init() {
+      await loadTasks();
+      renderBoard();
+      updateMetrics();
+      renderActivityLog();
+    }
+    init();
   </script>
 </body>
 </html>
